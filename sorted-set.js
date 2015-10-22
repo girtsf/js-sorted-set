@@ -90,7 +90,7 @@ AbstractBinaryTree = (function() {
         node = node.right;
       }
     }
-    return node !== null && node.value === value;
+    return node !== null && comparator(value, node.value) === 0;
   };
 
   AbstractBinaryTree.prototype.findIterator = function(value) {
@@ -302,7 +302,7 @@ ArrayStrategy = (function() {
   ArrayStrategy.prototype.insert = function(value) {
     var index;
     index = binarySearchForIndex(this.data, value, this.comparator);
-    if (this.data[index] === value) {
+    if (this.comparator(this.data[index], value) === 0) {
       throw 'Value already in set';
     }
     return this.data.splice(index, 0, value);
@@ -311,8 +311,8 @@ ArrayStrategy = (function() {
   ArrayStrategy.prototype.remove = function(value) {
     var index;
     index = binarySearchForIndex(this.data, value, this.comparator);
-    if (this.data[index] !== value) {
-      throw 'Value not in set';
+    if (this.comparator(this.data[index], value) !== 0) {
+      return null;
     }
     return this.data.splice(index, 1);
   };
@@ -324,7 +324,7 @@ ArrayStrategy = (function() {
   ArrayStrategy.prototype.contains = function(value) {
     var index;
     index = binarySearchForIndex(this.data, value, this.comparator);
-    return this.index !== this.data.length && this.data[index] === value;
+    return this.index !== this.data.length && this.comparator(this.data[index], value) === 0;
   };
 
   ArrayStrategy.prototype.forEachImpl = function(callback, sortedSet, thisArg) {
@@ -532,7 +532,7 @@ nodeAllTheWay = function(node, leftOrRight) {
 binaryTreeDelete = function(node, value, comparator) {
   var cmp, nextNode;
   if (node === null) {
-    throw 'Value not in set';
+    return null;
   }
   cmp = comparator(value, node.value);
   if (cmp < 0) {
@@ -666,7 +666,7 @@ insertInNode = function(h, value, compare) {
   if (h === null) {
     return new Node(value);
   }
-  if (h.value === value) {
+  if (compare(h.value, value) === 0) {
     throw 'Value already in set';
   } else {
     if (compare(value, h.value) < 0) {
@@ -720,11 +720,11 @@ removeMinNode = function(h) {
 
 removeFromNode = function(h, value, compare) {
   if (h === null) {
-    throw 'Value not in set';
+    return null;
   }
-  if (h.value !== value && compare(value, h.value) < 0) {
+  if (compare(value, h.value) < 0) {
     if (h.left === null) {
-      throw 'Value not in set';
+      return null;
     }
     if (!h.left.isRed && !(h.left.left !== null && h.left.left.isRed)) {
       h = moveRedLeft(h);
@@ -735,16 +735,16 @@ removeFromNode = function(h, value, compare) {
       h = rotateRight(h);
     }
     if (h.right === null) {
-      if (value === h.value) {
+      if (compare(h.value, value) === 0) {
         return null;
       } else {
-        throw 'Value not in set';
+        return null;
       }
     }
     if (!h.right.isRed && !(h.right.left !== null && h.right.left.isRed)) {
       h = moveRedRight(h);
     }
-    if (value === h.value) {
+    if (compare(h.value, value) === 0) {
       h.value = findMinNode(h.right).value;
       h.right = removeMinNode(h.right);
     } else {
