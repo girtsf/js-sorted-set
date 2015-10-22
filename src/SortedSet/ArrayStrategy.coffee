@@ -42,12 +42,12 @@ class ArrayStrategy
 
   insert: (value) ->
     index = binarySearchForIndex(@data, value, @comparator)
-    throw 'Value already in set' if @data[index] == value
+    throw 'Value already in set' if @comparator(@data[index], value) == 0
     @data.splice(index, 0, value)
 
   remove: (value) ->
     index = binarySearchForIndex(@data, value, @comparator)
-    throw 'Value not in set' if @data[index] != value
+    return null if @comparator(@data[index], value) != 0
     @data.splice(index, 1)
 
   clear: ->
@@ -55,7 +55,7 @@ class ArrayStrategy
 
   contains: (value) ->
     index = binarySearchForIndex(@data, value, @comparator)
-    @index != @data.length && @data[index] == value
+    @index != @data.length && @comparator(@data[index], value) == 0
 
   forEachImpl: (callback, sortedSet, thisArg) ->
     for value, index in @data

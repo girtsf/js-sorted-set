@@ -12,7 +12,7 @@ nodeAllTheWay = (node, leftOrRight) ->
 
 # Returns the subtree, minus value
 binaryTreeDelete = (node, value, comparator) ->
-  throw 'Value not in set' if node is null
+  return null if node is null
 
   cmp = comparator(value, node.value)
   if cmp < 0

@@ -38,7 +38,7 @@ class AbstractBinaryTree
       else
         node = node.right
 
-    node isnt null && node.value == value
+    node isnt null && comparator(value, node.value) == 0
 
   findIterator: (value) -> BinaryTreeIterator.find(this, value, @comparator)
   beginIterator: -> BinaryTreeIterator.left(this)

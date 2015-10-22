@@ -1,5 +1,12 @@
 numberComparator = (a, b) -> a - b
 
+objectIdComparator = (a, b) ->
+  if (!a || !a.id)
+    return -1
+  if (!b || !b.id)
+    return 1
+  a.id.localeCompare(b.id)
+
 module.exports =
   describeStrategy: (description, strategy) ->
     describe description, ->
@@ -19,8 +26,8 @@ module.exports =
           priv.insert(4)
           expect(priv.toArray()).to.deep.eq([4])
 
-        it 'should fail to remove an element', ->
-          expect(-> priv.remove(4)).to.throw('Value not in set')
+        it 'should not fail to remove an element not found in set', ->
+          priv.remove(4)
 
         it 'should return an iterator with no next or previous', ->
           iterator = priv.findIterator(4)
@@ -154,7 +161,7 @@ module.exports =
 
         it 'should iterate in forEachImpl', ->
           set = 'foo'
-          thisArg = 'moo'
+          thisArg = { testProperty: 'testValue' }
           spy = sinon.spy()
           priv.forEachImpl(spy, set, thisArg)
           expect(spy).to.have.callCount(3)
@@ -177,3 +184,33 @@ module.exports =
         it 'should not allow setValue() on an end iterator', ->
           iterator = priv.endIterator()
           expect(-> iterator.setValue(2.5)).to.throw()
+
+      describe 'with objects', ->
+        beforeEach ->
+          priv = new strategy(comparator: objectIdComparator)
+          priv.insert({id: '222'})
+          priv.insert({id: '333'})
+          priv.insert({id: '111'})
+
+        it 'should not contain a number', ->
+          expect(priv.contains(2)).to.eq(false)
+
+        it 'should not contain an object', ->
+          expect(priv.contains({id: '5'})).to.eq(false)
+
+        it 'should contain an object', ->
+          expect(priv.contains({id: '111'})).to.eq(true)
+          expect(priv.contains({id: '222'})).to.eq(true)
+          expect(priv.contains({id: '333'})).to.eq(true)
+
+        it 'should remove an object properly', ->
+          array = priv.toArray()
+          expect(array.length).to.eq(3)
+
+          priv.remove({id: '222'})
+
+          array = priv.toArray()
+
+          expect(array.length).to.eq(2)
+          expect(array[0].id).to.eq('111')
+          expect(array[1].id).to.eq('333')

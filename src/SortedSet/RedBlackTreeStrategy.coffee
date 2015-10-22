@@ -64,7 +64,7 @@ insertInNode = (h, value, compare) ->
   #if h.left isnt null && h.left.isRed && h.right isnt null && h.right.isRed
   #  colorFlip(h)
 
-  if h.value is value
+  if compare(h.value, value) == 0
     throw 'Value already in set'
   else
     if compare(value, h.value) < 0
@@ -116,10 +116,10 @@ removeMinNode = (h) ->
   fixUp(h)
 
 removeFromNode = (h, value, compare) ->
-  throw 'Value not in set' if h is null
+  return null if h is null
 
-  if h.value isnt value && compare(value, h.value) < 0
-    throw 'Value not in set' if h.left is null
+  if compare(value, h.value) < 0
+    return null if h.left is null
     if !h.left.isRed && !(h.left.left isnt null && h.left.left.isRed)
       h = moveRedLeft(h)
     h.left = removeFromNode(h.left, value, compare)
@@ -128,14 +128,14 @@ removeFromNode = (h, value, compare) ->
       h = rotateRight(h)
 
     if h.right is null
-      if value is h.value
+      if compare(h.value, value) == 0
         return null # leaf node; LLRB assures no left value here
       else
-        throw 'Value not in set'
+        return null
 
     if !h.right.isRed && !(h.right.left isnt null && h.right.left.isRed)
       h = moveRedRight(h)
-    if value is h.value
+    if compare(h.value, value) == 0
       h.value = findMinNode(h.right).value
       h.right = removeMinNode(h.right)
     else
